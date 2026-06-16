@@ -39,6 +39,11 @@ if ($baseDir !== '/' && strpos($path, $baseDir) === 0) {
     $path = substr($path, strlen($baseDir));
 }
 
+// Strip /public prefix if present (e.g. under subdirectory hosting or redirected route fallbacks)
+if (strpos($path, '/public') === 0) {
+    $path = substr($path, 7);
+}
+
 // Clean trailing slashes
 if (empty($path)) {
     $path = '/';
