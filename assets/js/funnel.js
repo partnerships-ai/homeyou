@@ -612,15 +612,19 @@ function validateEmail(email) {
 
 // Get project base folder path dynamically to prefix endpoints
 function getBaseDir() {
-    let scriptPath = window.location.pathname;
-    // Remove index.php or route suffixes if any
-    let base = scriptPath.substring(0, scriptPath.indexOf('/public'));
-    if (base) {
-        return base + '/public';
+    let path = window.location.pathname;
+    path = path.replace(/\/index\.php$/, '');
+    
+    const knownRoutes = ['/api/ping', '/api/post', '/success', '/terms', '/privacy'];
+    for (let route of knownRoutes) {
+        if (path.endsWith(route)) {
+            return path.substring(0, path.length - route.length);
+        }
     }
-    // Subfolder index.php
-    if (scriptPath.includes('/public/')) {
-        return scriptPath.split('/public/')[0] + '/public';
+    
+    if (path.endsWith('/')) {
+        path = path.substring(0, path.length - 1);
     }
-    return '';
+    
+    return path;
 }
