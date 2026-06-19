@@ -449,7 +449,7 @@ ob_start();
 </div>
 
 <!-- Funnel script inclusion -->
-<script src="<?php echo htmlspecialchars($baseDir); ?>/assets/js/funnel.js"></script>
+<script src="<?php echo htmlspecialchars($baseDir); ?>/assets/js/funnel.js?v=<?php echo filemtime(dirname(__DIR__) . '/assets/js/funnel.js'); ?>"></script>
 
 <?php
 $content = ob_get_clean();

@@ -42,7 +42,7 @@ if ($baseDir === '/' || $baseDir === '\\') {
         }
     </script>
     <!-- Custom CSS (glassmorphism details, animations, hover states) -->
-    <link rel="stylesheet" href="<?php echo htmlspecialchars($baseDir); ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($baseDir); ?>/assets/css/style.css?v=<?php echo filemtime(dirname(__DIR__) . '/assets/css/style.css'); ?>">
 </head>
 
 <body class="bg-background text-primary min-h-screen font-sans flex flex-col justify-between antialiased">
