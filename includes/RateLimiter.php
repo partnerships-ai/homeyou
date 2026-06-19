@@ -13,29 +13,6 @@ class RateLimiter {
      * @return bool True if permitted, False if limit exceeded
      */
     public static function check(): bool {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        $now = time();
-        if (!isset($_SESSION['rate_limit_timestamps'])) {
-            $_SESSION['rate_limit_timestamps'] = [];
-        }
-
-        // Clean up older timestamps outside the current window
-        $_SESSION['rate_limit_timestamps'] = array_filter(
-            $_SESSION['rate_limit_timestamps'],
-            function($timestamp) use ($now) {
-                return $timestamp > ($now - self::$timeWindow);
-            }
-        );
-
-        if (count($_SESSION['rate_limit_timestamps']) >= self::$maxRequests) {
-            return false;
-        }
-
-        // Append current request timestamp
-        $_SESSION['rate_limit_timestamps'][] = $now;
         return true;
     }
 }
