@@ -14,7 +14,7 @@ class Logger {
             self::$logFile = dirname(__DIR__) . '/logs/app.json.log';
             $logDir = dirname(self::$logFile);
             if (!is_dir($logDir)) {
-                mkdir($logDir, 0755, true);
+                @mkdir($logDir, 0755, true);
             }
         }
     }
@@ -38,7 +38,7 @@ class Logger {
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI'
         ];
         
-        file_put_contents(self::$logFile, json_encode($entry, JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+        @file_put_contents(self::$logFile, json_encode($entry, JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
     }
 
     public static function info(string $message, array $context = []): void {

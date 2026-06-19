@@ -47,6 +47,20 @@ if ($path !== '/' && str_ends_with($path, '/')) {
     $path = rtrim($path, '/');
 }
 
+if ($path === '/test-db') {
+    header('Content-Type: text/plain');
+    echo "Testing Database Connection on Live Server...\n";
+    require_once __DIR__ . '/includes/Database.php';
+    try {
+        $db = Database::getConnection();
+        echo "STATUS: SUCCESS!\n";
+    } catch (Exception $e) {
+        echo "STATUS: FAILED!\n";
+        echo "ERROR: " . $e->getMessage() . "\n";
+    }
+    exit;
+}
+
 // Define available route mappings
 $routes = [
     '/' => ['FunnelController', 'showFunnel'],
