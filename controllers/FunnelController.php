@@ -203,6 +203,18 @@ class FunnelController {
         }
 
         try {
+            // Save PII to database immediately before the cURL request to ensure contact details are never lost
+            Lead::updatePII($leadId, [
+                'first_name' => $firstName,
+                'last_name' => $lastName,
+                'phone' => $phone,
+                'email' => $email,
+                'street_address' => $streetAddress,
+                'city' => $city,
+                'state' => $state,
+                'zip_code' => $zipCode
+            ], 'ping_success');
+
             Lead::logAction($leadId, 'post_initiated', "PII values collected. Posting payload.");
 
             $apiClient = new ApiClient();
@@ -273,6 +285,24 @@ class FunnelController {
             }
         } catch (Exception $e) {
             Logger::error("Post endpoint error: " . $e->getMessage());
+            
+            // On exception, save contact details and mark as post_failed so it is in the database
+            try {
+                Lead::updatePII($leadId, [
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                    'phone' => $phone,
+                    'email' => $email,
+                    'street_address' => $streetAddress,
+                    'city' => $city,
+                    'state' => $state,
+                    'zip_code' => $zipCode
+                ], 'post_failed');
+                Lead::logAction($leadId, 'post_exception', "Internal error: " . $e->getMessage());
+            } catch (Exception $dbEx) {
+                Logger::error("Fallback updatePII failed on exception: " . $dbEx->getMessage());
+            }
+
             http_response_code(500);
             echo json_encode(['status' => 'failed', 'errors' => ['Internal server error during final submission.']]);
         }

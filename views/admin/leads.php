@@ -151,6 +151,8 @@ ob_start();
                         onclick="switchTab('details')">Information</button>
                     <button id="tabBtnLogs" class="flex-1 py-2 rounded-lg text-center transition-all hover:text-primary"
                         onclick="switchTab('logs')">Processing Logs</button>
+                    <button id="tabBtnApi" class="flex-1 py-2 rounded-lg text-center transition-all hover:text-primary"
+                        onclick="switchTab('api')">API Payload Logs</button>
                 </div>
 
                 <!-- TAB VIEW: Details Info -->
@@ -226,7 +228,12 @@ ob_start();
                     </div>
                 </div>
 
-                <!-- Outbound API Payloads view removed per request -->
+                <!-- TAB VIEW: API Payloads -->
+                <div id="tabApi" class="hidden border border-slate-100 rounded-2xl p-4 bg-slate-50/50 space-y-4">
+                    <div id="apiLogsContainer" class="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
 
             </div>
 
@@ -284,10 +291,12 @@ ob_start();
 
         document.getElementById('tabBtnDetails').className = baseClass;
         document.getElementById('tabBtnLogs').className = baseClass;
+        document.getElementById('tabBtnApi').className = baseClass;
 
         // Hide tabs
         document.getElementById('tabDetails').classList.add('hidden');
         document.getElementById('tabLogs').classList.add('hidden');
+        document.getElementById('tabApi').classList.add('hidden');
 
         // Activate selected
         if (tabName === 'details') {
@@ -296,6 +305,9 @@ ob_start();
         } else if (tabName === 'logs') {
             document.getElementById('tabBtnLogs').className = activeClass;
             document.getElementById('tabLogs').classList.remove('hidden');
+        } else if (tabName === 'api') {
+            document.getElementById('tabBtnApi').className = activeClass;
+            document.getElementById('tabApi').classList.remove('hidden');
         }
     }
 
@@ -368,6 +380,53 @@ ob_start();
                     <td class="p-3 text-slate-600 font-semibold text-[11px]">${log.message}</td>
                 </tr>
             `;
+            });
+        }
+
+        // Bind API logs
+        const apiLogs = data.api_logs || [];
+        const apiLogsContainer = document.getElementById('apiLogsContainer');
+        apiLogsContainer.innerHTML = '';
+        if (apiLogs.length === 0) {
+            apiLogsContainer.innerHTML = '<div class="text-center text-slate-400 text-xs py-4"><i class="fa-solid fa-code text-[16px] mb-2 block text-slate-300"></i>No outbound API payloads recorded for this lead. Ensure DB persistence is enabled and API requests have run.</div>';
+        } else {
+            apiLogs.forEach(api => {
+                const reqString = typeof api.request === 'object' ? JSON.stringify(api.request, null, 2) : api.request;
+                const resString = typeof api.response === 'object' ? JSON.stringify(api.response, null, 2) : api.response;
+                
+                let badgeClass = 'bg-blue-50 text-accent border-blue-200/50';
+                if (api.status_code >= 200 && api.status_code < 300) {
+                    badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200/50';
+                } else {
+                    badgeClass = 'bg-rose-50 text-rose-700 border-rose-200/50';
+                }
+                
+                let typeBadge = `<span class="px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase border ${badgeClass}">${api.api_type}</span>`;
+                let statusBadge = `<span class="px-2 py-0.5 rounded-lg text-[9px] font-bold border ${badgeClass}">HTTP ${api.status_code}</span>`;
+
+                apiLogsContainer.innerHTML += `
+                    <div class="border border-slate-200 rounded-xl p-3 bg-white space-y-2 text-[11px]">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                ${typeBadge}
+                                <span class="font-mono text-slate-500 break-all select-all">${escapeHtml(api.url)}</span>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-mono">Request: ${api.req_time} | Response: ${api.res_time}</div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                            <div>
+                                <span class="font-bold text-slate-500 block mb-1">Request Payload:</span>
+                                <pre class="bg-slate-50 border border-slate-100 rounded-lg p-2 overflow-x-auto max-h-[150px] font-mono text-[10px] text-slate-600 select-all">${escapeHtml(reqString)}</pre>
+                            </div>
+                            <div>
+                                <span class="font-bold text-slate-500 block mb-1">Response Body:</span>
+                                <pre class="bg-slate-50 border border-slate-100 rounded-lg p-2 overflow-x-auto max-h-[150px] font-mono text-[10px] text-slate-600 select-all">${escapeHtml(resString)}</pre>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
         }
 
